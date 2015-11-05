@@ -1,4 +1,4 @@
-from pybuilder.core import use_plugin, init
+from pybuilder.core import use_plugin, init, Author
 from pybuilder.vcs import VCSRevision
 
 use_plugin("python.core")
@@ -11,7 +11,10 @@ use_plugin("python.distutils")
 
 name = "pils"
 default_task = "publish"
-
+summary = "PILS - Python uTILS"
+description = "PILS is a container for utilis written in python"
+license = 'Apache License 2.0'
+url = 'https://github.com/ImmobilienScout24/pils'
 
 @init
 def set_properties(project):
