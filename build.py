@@ -1,4 +1,5 @@
 from pybuilder.core import use_plugin, init
+from pybuilder.vcs import VCSRevision
 
 use_plugin("python.core")
 use_plugin("python.unittest")
