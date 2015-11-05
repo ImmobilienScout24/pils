@@ -8,7 +8,7 @@ use_plugin("python.coverage")
 use_plugin("python.distutils")
 
 
-name = "pytils"
+name = "pils"
 default_task = "publish"
 
 
