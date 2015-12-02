@@ -1,4 +1,4 @@
-from pybuilder.core import use_plugin, init, Author
+from pybuilder.core import use_plugin, init
 from pybuilder.vcs import VCSRevision
 
 use_plugin("python.core")
@@ -17,9 +17,13 @@ description = "PILS is a container for utilis written in python"
 license = 'Apache License 2.0'
 url = 'https://github.com/ImmobilienScout24/pils'
 
+
 @init
 def set_properties(project):
-    pass
+    project.depends_on("simplejson")
+    project.depends_on("boto3")
+    project.build_depends_on("mock")
+
 
 @init(environments='teamcity')
 def set_properties_for_teamcity_builds(project):
