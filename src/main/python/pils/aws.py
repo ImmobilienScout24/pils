@@ -19,10 +19,10 @@ def get_lambda_config_property(context, property_name=None):
     )['Description']
     try:
         data = json.loads(description)
-        if property_name:
-            return_value = data[property_name]
-        else:
+        if property_name is None:
             return_value = data
+        else:
+            return_value = data[property_name]
         return return_value
-    except (ValueError, KeyError):
+    except KeyError:
         return None

@@ -35,6 +35,18 @@ class PilsTests(TestCase):
         self.assertEqual(get_lambda_config_property(self.context, "key1"), properties['key1'])
 
     @patch("boto3.client")
+    def test_get_lambda_config_property_with_unknown_property(self, mock_boto3_client):
+        properties = {
+            "key1": 42,
+            "key2": "string",
+            "key3": [2, 3]
+        }
+        property_dict = {"Description": json.dumps(properties)}
+        mock_boto3_client.return_value = self.BotoClient(property_dict)
+
+        self.assertEqual(get_lambda_config_property(self.context, "key4"), None)
+
+    @patch("boto3.client")
     def test_get_lambda_config_property_without_property(self, mock_boto3_client):
         properties = {
             "key1": 42,
@@ -51,4 +63,4 @@ class PilsTests(TestCase):
         property_dict = {"Description": "foobar"}
         mock_boto3_client.return_value = self.BotoClient(property_dict)
 
-        self.assertEqual(get_lambda_config_property(self.context), None)
+        self.assertRaises(ValueError, get_lambda_config_property, self.context)
