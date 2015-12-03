@@ -20,7 +20,6 @@ url = 'https://github.com/ImmobilienScout24/pils'
 
 @init
 def set_properties(project):
-    project.depends_on("simplejson")
     project.depends_on("boto3")
     project.build_depends_on("mock")
 
