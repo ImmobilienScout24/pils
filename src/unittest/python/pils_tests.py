@@ -1,11 +1,10 @@
 from __future__ import print_function, absolute_import, division
 from unittest import TestCase
 import os
-from pils import get_item_from_module
+from pils import get_item_from_module, dict_is_subset
 
 
 class PilsTests(TestCase):
-
     def test_raise_exception_when_module_could_not_be_loaded(self):
         self.assertRaises(Exception, get_item_from_module, "xyz", "")
 
@@ -17,3 +16,67 @@ class PilsTests(TestCase):
 
     def test_get_item_from_sub_module(self):
         self.assertEqual(os.path.join, get_item_from_module("os.path", "join"))
+
+
+    def test_empty_dict_is_always_a_subset(self):
+        self.assertEqual(dict_is_subset({}, {}), True)
+        self.assertEqual(dict_is_subset({}, {'foo': 'bar'}), True)
+
+    def test_flat_dicts_that_are_subsets(self):
+        small = {'a': 42}
+        big = {'a':42, 'b': 43}
+        self.assertEqual(dict_is_subset(small, big), True)
+        self.assertEqual(dict_is_subset(big, big), True)
+
+    def test_flat_dicts_that_are_not_subsets(self):
+        small = {'a': 43}
+        small2 = {'b': 42}
+        small3 = {'a': '42'}
+        small4 = {'c': 42}
+        big = {'a':42, 'b': 43}
+        self.assertEqual(dict_is_subset(small, big), False)
+        self.assertEqual(dict_is_subset(small2, big), False)
+        self.assertEqual(dict_is_subset(small3, big), False)
+        self.assertEqual(dict_is_subset(small4, big), False)
+
+    def test_recursive_dicts(self):
+        """This is useful for filtering USofA data"""
+        small = {
+            'account1': {
+                'owner': 'me'
+            }
+        }
+        small2 = {
+            'account1': {
+                'owner': 'somebodyelse'
+            }
+        }
+        small3 = {
+            'missing_in_big': {
+                'foo': 42
+            }
+        }
+        big = {
+            'account1': {
+                'id': 42,
+                'owner': 'me',
+            },
+            'account2': {
+                'id': 43,
+                'owner': 'notme'
+            }
+        }
+
+        self.assertEqual(dict_is_subset(big, big), True)
+        self.assertEqual(dict_is_subset(small, big), True)
+        self.assertEqual(dict_is_subset(small2, big), False)
+        self.assertEqual(dict_is_subset(small3, big), False)
+
+    def test_recursing_meets_non_dict_container(self):
+        small = {
+            'foo': {'bar': 42}
+        }
+        big = {
+            'foo': ['bar']
+        }
+        self.assertEqual(dict_is_subset(small, big), False)
