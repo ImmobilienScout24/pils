@@ -60,10 +60,14 @@ def dict_is_subset(small_dict, big_dict):
     return True
 
 
-def levelname_to_integer(levelname):
+def levelname_to_integer(level_name):
     """Translate human-readable log level name to an integer"""
-    levelname = levelname.lower()
+    level_name = level_name.lower()
     level_translation = {'debug': logging.DEBUG, 'info': logging.INFO,
                          'warning': logging.WARNING, 'error': logging.ERROR,
                          'critical': logging.CRITICAL}
-    return level_translation[levelname]
+    if level_name not in level_translation:
+        valid_levels = ", ".join(level_translation.keys())
+        raise Exception('Log level "{0}" is invalid, use one of {1}.'.format(
+                        level_name, valid_levels))
+    return level_translation[level_name]

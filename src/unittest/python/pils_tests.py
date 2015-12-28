@@ -98,3 +98,6 @@ class PilsTests(TestCase):
     def test_case_insensitive_input_levelname_to_integer(self):
         translated_level = levelname_to_integer('DeBuG')
         self.assertEqual(translated_level, logging.DEBUG)
+
+    def test_levelname_to_integer_excepts_on_invalid_level(self):
+        self.assertRaises(Exception, levelname_to_integer, "invalidloglevel")
