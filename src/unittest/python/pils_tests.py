@@ -92,6 +92,8 @@ class PilsTests(TestCase):
         self.assertEqual(translated_level, logging.WARNING)
         translated_level = levelname_to_integer('error')
         self.assertEqual(translated_level, logging.ERROR)
+        translated_level = levelname_to_integer('critical')
+        self.assertEqual(translated_level, logging.CRITICAL)
 
     def test_case_insensitive_input_levelname_to_integer(self):
         translated_level = levelname_to_integer('DeBuG')

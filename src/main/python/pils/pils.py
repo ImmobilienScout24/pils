@@ -64,5 +64,6 @@ def levelname_to_integer(levelname):
     """Translate human-readable log level name to an integer"""
     levelname = levelname.lower()
     level_translation = {'debug': logging.DEBUG, 'info': logging.INFO,
-                         'warning': logging.WARNING, 'error': logging.ERROR}
+                         'warning': logging.WARNING, 'error': logging.ERROR,
+                         'critical': logging.CRITICAL}
     return level_translation[levelname]
