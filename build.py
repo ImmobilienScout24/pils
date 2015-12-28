@@ -13,7 +13,7 @@ name = "pils"
 version = "0.1"
 default_task = "publish"
 summary = "PILS - Python uTILS"
-description = "PILS is a container for utilis written in python"
+description = "PILS is a container for utilities written in python"
 license = 'Apache License 2.0'
 url = 'https://github.com/ImmobilienScout24/pils'
 
