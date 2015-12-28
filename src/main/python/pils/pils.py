@@ -1,5 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
+import logging
+
 
 def get_item_from_module(module_name, item_name):
     """Load classes/modules/functions/... from given config"""
@@ -56,3 +58,11 @@ def dict_is_subset(small_dict, big_dict):
             if value != big_dict[key]:
                 return False
     return True
+
+
+def levelname_to_integer(levelname):
+    """Translate human-readable log level name to an integer"""
+    levelname = levelname.lower()
+    level_translation = {'debug': logging.DEBUG, 'info': logging.INFO,
+                         'warning': logging.WARNING, 'error': logging.ERROR}
+    return level_translation[levelname]

@@ -1,7 +1,9 @@
 from __future__ import print_function, absolute_import, division
+
 from unittest import TestCase
+import logging
 import os
-from pils import get_item_from_module, dict_is_subset
+from pils import get_item_from_module, dict_is_subset, levelname_to_integer
 
 
 class PilsTests(TestCase):
@@ -80,3 +82,17 @@ class PilsTests(TestCase):
             'foo': ['bar']
         }
         self.assertEqual(dict_is_subset(small, big), False)
+
+    def test_levelname_to_integer_knows_all_loglevels(self):
+        translated_level = levelname_to_integer('debug')
+        self.assertEqual(translated_level, logging.DEBUG)
+        translated_level = levelname_to_integer('info')
+        self.assertEqual(translated_level, logging.INFO)
+        translated_level = levelname_to_integer('warning')
+        self.assertEqual(translated_level, logging.WARNING)
+        translated_level = levelname_to_integer('error')
+        self.assertEqual(translated_level, logging.ERROR)
+
+    def test_case_insensitive_input_levelname_to_integer(self):
+        translated_level = levelname_to_integer('DeBuG')
+        self.assertEqual(translated_level, logging.DEBUG)
