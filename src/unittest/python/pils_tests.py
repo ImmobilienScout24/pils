@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, division
 
-from unittest import TestCase
+from unittest2 import TestCase
 import logging
 import os
 import time
