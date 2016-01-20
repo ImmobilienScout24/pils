@@ -3,7 +3,12 @@ from __future__ import print_function, absolute_import, division
 from unittest import TestCase
 import logging
 import os
-from pils import get_item_from_module, dict_is_subset, levelname_to_integer
+import time
+
+import mock
+
+from pils import (get_item_from_module, dict_is_subset, levelname_to_integer,
+                  retry)
 
 
 class PilsTests(TestCase):
@@ -101,3 +106,47 @@ class PilsTests(TestCase):
 
     def test_levelname_to_integer_excepts_on_invalid_level(self):
         self.assertRaises(Exception, levelname_to_integer, "invalidloglevel")
+
+    def test_retry_passes_return_value(self):
+        my_function = retry(lambda: 42)
+        self.assertEqual(my_function(), 42)
+
+    def test_retry_passes_exceptions(self):
+        def helper():
+            raise Exception("some exception")
+
+        retry_helper = retry(helper)
+
+        self.assertRaises(Exception, retry_helper)
+
+    def test_retry_actually_retries(self):
+        helper = mock.Mock()
+        helper.side_effect = [Exception, 42]
+        helper.__name__ = "workaround for mock failure"
+
+        retry_helper = retry(helper)
+
+        self.assertEqual(retry_helper(), 42)
+
+    def test_retry_uses_the_attempts_parameter(self):
+        helper = mock.Mock()
+        helper.side_effect = [Exception, 42]
+        helper.__name__ = "workaround for mock failure"
+
+        retry_helper = retry(helper, attempts=1)
+        self.assertRaises(Exception, retry_helper)
+
+    def test_retry_uses_delay_parameter(self):
+        helper = mock.Mock()
+        helper.side_effect = [Exception, 42]
+        helper.__name__ = "workaround for mock failure"
+
+        retry_helper = retry(helper, delay=1)
+
+        start = time.time()
+        self.assertEqual(retry_helper(), 42)
+        stop = time.time()
+
+        delta = stop - start
+        self.assertGreater(delta, 1)
+

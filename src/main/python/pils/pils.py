@@ -1,6 +1,8 @@
 from __future__ import print_function, absolute_import, division
 
 import logging
+import time
+from functools import wraps
 
 
 def get_item_from_module(module_name, item_name):
@@ -71,3 +73,17 @@ def levelname_to_integer(level_name):
         raise Exception('Log level "{0}" is invalid, use one of {1}.'.format(
                         level_name, valid_levels))
     return level_translation[level_name]
+
+
+def retry(old_function, attempts=3, delay=0):
+    """Retry the function call until it succeeds"""
+    @wraps(old_function)
+    def call_with_retry(*args, **kwargs):
+        for attempt in range(attempts):
+            try:
+                return old_function(*args, **kwargs)
+            except Exception:
+                if attempt == attempts - 1:
+                    raise
+                time.sleep(delay)
+    return call_with_retry
