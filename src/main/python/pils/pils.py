@@ -74,16 +74,30 @@ def levelname_to_integer(level_name):
                         level_name, valid_levels))
     return level_translation[level_name]
 
-
-def retry(old_function, attempts=3, delay=0):
+def retry(*args, **kwargs):
     """Retry the function call until it succeeds"""
-    @wraps(old_function)
-    def call_with_retry(*args, **kwargs):
-        for attempt in range(attempts):
-            try:
-                return old_function(*args, **kwargs)
-            except Exception:
-                if attempt == attempts - 1:
-                    raise
-                time.sleep(delay)
-    return call_with_retry
+    attempts = kwargs.pop('attempts', 3)
+    delay = kwargs.pop('delay', 0)
+    if kwargs:
+        raise Exception("Unknown kwargs given: " + ", ".join(kwargs.keys()))
+
+    def retry_decorator(old_function):
+        """Retry the function call until it succeeds"""
+        @wraps(old_function)
+        def call_with_retry(*args, **kwargs):
+            for attempt in range(attempts):
+                try:
+                    return old_function(*args, **kwargs)
+                except Exception:
+                    if attempt == attempts - 1:
+                        raise
+                    time.sleep(delay)
+        return call_with_retry
+
+    if args:
+        if len(args) > 1:
+            raise Exception("You cannot pass more than 1 argument to retry()")
+        return retry_decorator(args[0])
+
+    return retry_decorator
+

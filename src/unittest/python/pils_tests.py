@@ -107,17 +107,25 @@ class PilsTests(TestCase):
     def test_levelname_to_integer_excepts_on_invalid_level(self):
         self.assertRaises(Exception, levelname_to_integer, "invalidloglevel")
 
+
+class RetryTests(TestCase):
     def test_retry_passes_return_value(self):
         my_function = retry(lambda: 42)
         self.assertEqual(my_function(), 42)
 
+        @retry
+        def my_function2():
+            return 43
+        self.assertEqual(my_function2(), 43)
+
     def test_retry_passes_exceptions(self):
+        @retry
         def helper():
-            raise Exception("some exception")
+            raise TypeError("some exception")
+        self.assertRaises(TypeError, helper)
 
-        retry_helper = retry(helper)
-
-        self.assertRaises(Exception, retry_helper)
+        helper2 = retry(lambda: 1 / 0)
+        self.assertRaises(ZeroDivisionError, helper2)
 
     def test_retry_actually_retries(self):
         helper = mock.Mock()
@@ -128,25 +136,71 @@ class PilsTests(TestCase):
 
         self.assertEqual(retry_helper(), 42)
 
-    def test_retry_uses_the_attempts_parameter(self):
+    def test_explicit_retry_uses_the_attempts_parameter(self):
+        for num_attempts in 1, 2:
+            helper = mock.Mock()
+            helper.side_effect = [Exception, 42]
+            helper.__name__ = "workaround for mock failure"
+
+            retry_helper = retry(helper, attempts=num_attempts)
+            if num_attempts == 1:
+                self.assertRaises(Exception, retry_helper)
+            else:
+                self.assertEqual(retry_helper(), 42)
+
+    def test_decorator_retry_uses_the_attempts_parameter(self):
+        for num_attempts in 1, 2:
+            class Helper(object):
+                def __init__(self):
+                    self.fail = True
+
+                @retry(attempts=num_attempts)
+                def foo(self):
+                    if self.fail:
+                        self.fail = False
+                        raise Exception
+
+            helper = Helper()
+            if num_attempts == 1:
+                self.assertRaises(Exception, helper)
+            else:
+                self.assertEqual(helper.foo(), None)
+
+
+    def test_excplicit_retry_uses_delay_parameter(self):
         helper = mock.Mock()
         helper.side_effect = [Exception, 42]
         helper.__name__ = "workaround for mock failure"
 
-        retry_helper = retry(helper, attempts=1)
-        self.assertRaises(Exception, retry_helper)
-
-    def test_retry_uses_delay_parameter(self):
-        helper = mock.Mock()
-        helper.side_effect = [Exception, 42]
-        helper.__name__ = "workaround for mock failure"
-
-        retry_helper = retry(helper, delay=1)
+        retry_helper = retry(helper, delay=0.5)
 
         start = time.time()
         self.assertEqual(retry_helper(), 42)
         stop = time.time()
 
         delta = stop - start
-        self.assertGreater(delta, 1)
+        self.assertGreater(delta, 0.5)
 
+    def test_decorator_retry_uses_the_delay_parameter(self):
+        class Helper(object):
+            def __init__(self):
+                self.num_fails = 1
+
+            @retry(delay=0.5)
+            def foo(self):
+                if self.num_fails:
+                    self.num_fails -= 1
+                    raise Exception
+        start = time.time()
+        helper = Helper()
+        helper.foo()
+        stop = time.time()
+
+        delta = stop - start
+        self.assertGreater(delta, 0.5)
+
+    def test_retry_fails_on_unknown_parameters(self):
+        helper = lambda: 42
+
+        self.assertRaises(Exception, retry, helper, unknown_parameter=123)
+        self.assertRaises(Exception, retry, helper, 123)
